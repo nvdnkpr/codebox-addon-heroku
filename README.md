@@ -1,4 +1,4 @@
-codebox-addon-heroku
-====================
+Heroku Deployment (CodeBox add-on)
+========================
 
-Heroku deployment solution for CodeBox.
+Deployment solution for Codebox (https://github.com/FriendCode/codebox).

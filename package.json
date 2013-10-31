@@ -1,0 +1,25 @@
+{
+    "name": "heroku",
+    "version": "0.0.1",
+    "title": "Heroku",
+    "description": "Heroku deployment solution for CodeBox.",
+    "homepage": "https://github.com/FriendCode/codebox-addon-heroku",
+    "license": "Apache",
+    "author": {
+        "name": "Samy Pessé",
+        "email": "samypesse@gmaiL.com",
+        "url": "http://samypesse.fr"
+    },
+    "main": "./node/main",
+    "plugin": {
+        "provides": [
+            "heroku"
+        ],
+        "consumes": [
+            "workspace", "server"
+        ]
+    },
+    "client": {
+        "main": "client"
+    }
+}
