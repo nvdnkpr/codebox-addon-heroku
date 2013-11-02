@@ -10,13 +10,17 @@
         "email": "samypesse@gmaiL.com",
         "url": "http://samypesse.fr"
     },
+    "dependencies": {
+        "heroku": "0.1.2",
+        "q": "0.9.6",
+        "underscore": "1.4.4"
+    },
     "main": "./node/main",
     "plugin": {
-        "provides": [
-            "heroku"
-        ],
+        "provides": [],
         "consumes": [
-            "workspace", "server"
+            "httpRPC",
+            "workspace"
         ]
     },
     "client": {
