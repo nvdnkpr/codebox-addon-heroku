@@ -1,7 +1,10 @@
 define([], function() {
+    var hr = require("hr/hr");
     var commands = require("core/commands");
     var settings = require("utils/settings");
     var api = require("core/api");
+    var search = require("core/search");
+    var cache = hr.Cache.namespace("heroku");
 
     // Add settings page
     settings.add({
@@ -27,11 +30,48 @@ define([], function() {
         }
     });
 
-    // Add opening command
-    commands.register("deploy.heroku", {
-        title: "Deploy to Heroku",
-        icon: "cloud"
-    }, function(args) {
-        
+    // Search for an app
+    var searchApps = function(query) {
+        var d = new hr.Deferred();
+
+        var _results = function(apps) {
+            d.resolve(_.filter(apps, function(app) {
+                return (app.name.toLowerCase().indexOf(query) != -1);
+            }));
+        };
+
+        var _apps = cache.get("apps");
+        if (_apps) {
+            _results(_apps);
+        } else {
+            api.rpc("/heroku/apps").then(function(apps) {
+                cache.set("apps", apps, 3600);
+                _results(apps);
+            });
+        }
+        return d;
+    };
+
+    // Add apps to search
+    search.handler({
+        'id': "heroku",
+        'title': "Deploy to heroku"
+    }, function(query) {
+        var d = new hr.Deferred();
+
+        searchApps(query).then(function(apps) {
+            d.resolve(_.map(apps, _.bind(function(app) {
+                return {
+                    "text": app.name,
+                    "callback": _.bind(function() {
+                        commands.run("monitor.open");
+                        api.rpc("/heroku/deploy", {
+                            'git': app.git_url
+                        });
+                    }, this)
+                };
+            })));
+        });
+        return d;
     });
 });

@@ -3,10 +3,12 @@ var Q = require('q');
 var fs = require('fs');
 var path = require('path');
 var _ = require('underscore');
+var spawn = require('child_process').spawn;
 var Heroku = require('heroku-client');
 
-function HerokuRPCService(workspace) {
+function HerokuRPCService(workspace, logger) {
     this.workspace = workspace;
+    this.logger = logger;
 
     _.bindAll(this);
 }
@@ -29,6 +31,36 @@ HerokuRPCService.prototype.apps = function(args, meta) {
     }).then(function(apps) {
         return Q(apps);
     });
+};
+
+// Deploy an application
+HerokuRPCService.prototype.deploy = function(args, meta) {
+    var git, d, that = this;
+    if (!args.git) {
+        return Q.reject(new Error("Need 'git' to deploy an heroku apps"));
+    }
+    d = Q.defer();
+
+    this.logger.log("Start deploying to Heroku ("+args.git+")");
+
+    git  = spawn('git', ['push', args.git, 'master'], {
+        'cwd': this.workspace.root
+    });
+
+    git.stdout.setEncoding('utf8');
+    git.stdout.on('data', function(data) {
+        that.logger.log(data);
+    });
+    git.stderr.setEncoding('utf8');
+    git.stderr.on('data', function(data) {
+        that.logger.log(data);
+    })
+    git.on('exit', function (code, signal) {
+        that.logger.log('Deployment to Heroku is finished with code', code);
+        d.resolve();
+    });
+
+    return d.promise;
 };
 
 // Send key to heroku
