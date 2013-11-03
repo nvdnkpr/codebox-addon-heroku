@@ -1,6 +1,6 @@
 {
     "name": "heroku",
-    "version": "0.0.2",
+    "version": "0.0.3",
     "title": "Heroku",
     "description": "Heroku deployment solution for CodeBox.",
     "homepage": "https://github.com/FriendCode/codebox-addon-heroku",
@@ -11,7 +11,7 @@
         "url": "http://samypesse.fr"
     },
     "dependencies": {
-        "heroku": "0.1.2",
+        "heroku-client": "0.9.2",
         "q": "0.9.6",
         "underscore": "1.4.4"
     },
