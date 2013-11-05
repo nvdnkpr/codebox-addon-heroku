@@ -1,7 +1,9 @@
 define([], function() {
     var hr = require("hr/hr");
+    var _ = require("Underscore");
     var commands = require("core/commands");
     var settings = require("utils/settings");
+    var dialogs = require("utils/dialogs");
     var api = require("core/api");
     var search = require("core/search");
     var cache = hr.Cache.namespace("heroku");
@@ -52,6 +54,16 @@ define([], function() {
         return d;
     };
 
+    // Deploy an application
+    var deployApp = function(app) {
+        dialogs.confirm("Deploy code to application <b>"+_.escape(app.name)+"</b>?").then(function() {
+            commands.run("monitor.open");
+            api.rpc("/heroku/deploy", {
+                'git': app.git_url
+            });
+        });
+    };
+
     // Add apps to search
     search.handler({
         'id': "heroku",
@@ -63,12 +75,9 @@ define([], function() {
             d.resolve(_.map(apps, _.bind(function(app) {
                 return {
                     "text": app.name,
-                    "callback": _.bind(function() {
-                        commands.run("monitor.open");
-                        api.rpc("/heroku/deploy", {
-                            'git': app.git_url
-                        });
-                    }, this)
+                    "callback": function() {
+                        deployApp(app); 
+                    }
                 };
             })));
         });
