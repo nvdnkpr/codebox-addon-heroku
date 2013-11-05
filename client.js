@@ -13,12 +13,14 @@ define([], function() {
         'namespace': "heroku",
         'section': "deployment",
         'title': "Heroku",
+        'defaults': {
+            'key': ""
+        },
         'fields': {
             'key': {
                 'label': "Key",
                 'type': "text",
                 'help': "You can find your api key in your settings Heroku.",
-                'default': ""
             },
             'regenerate': {
                 'label': "",
