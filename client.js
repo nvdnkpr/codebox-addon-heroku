@@ -1,17 +1,18 @@
 define([], function() {
+    var Q = require("q");
     var hr = require("hr/hr");
-    var _ = require("Underscore");
+    var _ = require("underscore");
     var commands = require("core/commands");
     var settings = require("utils/settings");
     var dialogs = require("utils/dialogs");
     var api = require("core/api");
     var search = require("core/search");
+    var user = require("core/user");
     var cache = hr.Cache.namespace("heroku");
 
     // Add settings page
     settings.add({
         'namespace': "heroku",
-        'section': "deployment",
         'title': "Heroku",
         'defaults': {
             'key': ""
@@ -36,24 +37,25 @@ define([], function() {
 
     // Search for an app
     var searchApps = function(query) {
-        var d = new hr.Deferred();
-
-        var _results = function(apps) {
-            d.resolve(_.filter(apps, function(app) {
+        var filter = function(apps) {
+            return _.filter(apps, function(app) {
                 return (app.name.toLowerCase().indexOf(query) != -1);
-            }));
+            });
         };
+
+        if (!user.settings("heroku").get("key")) {
+            return Q([]);
+        }
 
         var _apps = cache.get("apps");
         if (_apps) {
-            _results(_apps);
+            return Q(filter(_apps));
         } else {
-            api.rpc("/heroku/apps").then(function(apps) {
+            return api.rpc("/heroku/apps").then(function(apps) {
                 cache.set("apps", apps, 3600);
-                _results(apps);
+               return filter(apps);
             });
         }
-        return d;
     };
 
     // Deploy an application
@@ -71,18 +73,15 @@ define([], function() {
         'id': "heroku",
         'title': "Deploy to heroku"
     }, function(query) {
-        var d = new hr.Deferred();
-
-        searchApps(query).then(function(apps) {
-            d.resolve(_.map(apps, _.bind(function(app) {
+        return searchApps(query).then(function(apps) {
+            return _.map(apps, function(app) {
                 return {
                     "text": app.name,
                     "callback": function() {
                         deployApp(app); 
                     }
                 };
-            })));
+            });
         });
-        return d;
     });
 });

@@ -1,6 +1,6 @@
 {
     "name": "heroku",
-    "version": "0.1.1",
+    "version": "0.1.2",
     "title": "Heroku",
     "description": "Heroku deployment solution for CodeBox.",
     "homepage": "https://github.com/FriendCode/codebox-addon-heroku",
