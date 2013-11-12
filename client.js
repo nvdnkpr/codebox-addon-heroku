@@ -1,13 +1,13 @@
 define([], function() {
-    var Q = require("q");
-    var hr = require("hr/hr");
-    var _ = require("underscore");
-    var commands = require("core/commands");
-    var settings = require("utils/settings");
-    var dialogs = require("utils/dialogs");
-    var api = require("core/api");
-    var search = require("core/search");
-    var user = require("core/user");
+    var Q = codebox.require("q");
+    var hr = codebox.require("hr/hr");
+    var _ = codebox.require("underscore");
+    var commands = codebox.require("core/commands");
+    var settings = codebox.require("utils/settings");
+    var dialogs = codebox.require("utils/dialogs");
+    var api = codebox.require("core/api");
+    var search = codebox.require("core/search");
+    var user = codebox.require("core/user");
     var cache = hr.Cache.namespace("heroku");
 
     // Add settings page
