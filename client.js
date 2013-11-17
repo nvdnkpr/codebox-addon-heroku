@@ -3,7 +3,7 @@ define([], function() {
     var hr = codebox.require("hr/hr");
     var _ = codebox.require("underscore");
     var commands = codebox.require("core/commands");
-    var settings = codebox.require("utils/settings");
+    var settings = codebox.require("core/settings");
     var dialogs = codebox.require("utils/dialogs");
     var api = codebox.require("core/api");
     var search = codebox.require("core/search");
