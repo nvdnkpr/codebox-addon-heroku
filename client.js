@@ -1,4 +1,7 @@
-define([], function() {
+define([
+    "heroku",
+    "views/panel"
+], function(heroku, PanelHerokuView) {
     var Q = codebox.require("q");
     var hr = codebox.require("hr/hr");
     var _ = codebox.require("underscore");
@@ -8,7 +11,9 @@ define([], function() {
     var api = codebox.require("core/api");
     var search = codebox.require("core/search");
     var user = codebox.require("core/user");
-    var cache = hr.Cache.namespace("heroku");
+    var commands = codebox.require("core/commands");
+    var panels = codebox.require("core/panels");
+    
 
     // Add settings page
     settings.add({
@@ -35,53 +40,34 @@ define([], function() {
         }
     });
 
-    // Search for an app
-    var searchApps = function(query) {
-        var filter = function(apps) {
-            return _.filter(apps, function(app) {
-                return (app.name.toLowerCase().indexOf(query) != -1);
-            });
-        };
-
-        if (!user.settings("heroku").get("key")) {
-            return Q([]);
-        }
-
-        var _apps = cache.get("apps");
-        if (_apps) {
-            return Q(filter(_apps));
-        } else {
-            return api.rpc("/heroku/apps").then(function(apps) {
-                cache.set("apps", apps, 3600);
-               return filter(apps);
-            });
-        }
-    };
-
-    // Deploy an application
-    var deployApp = function(app) {
-        dialogs.confirm("Deploy code to application <b>"+_.escape(app.name)+"</b>?").then(function() {
-            commands.run("monitor.open");
-            api.rpc("/heroku/deploy", {
-                'git': app.git_url
-            });
-        });
-    };
-
     // Add apps to search
     search.handler({
         'id': "heroku",
         'title': "Deploy to heroku"
     }, function(query) {
-        return searchApps(query).then(function(apps) {
+        return heroku.search(query).then(function(apps) {
             return _.map(apps, function(app) {
                 return {
                     "text": app.name,
                     "callback": function() {
-                        deployApp(app); 
+                        heroku.deploy(app); 
                     }
                 };
             });
         });
     });
+
+    // Add search panel
+    var panel = panels.register("heroku", PanelHerokuView);
+    
+    // Add opening command
+    var command = commands.register("deploy.heroku.open", {
+        title: "Heroku",
+        icon: "cloud-upload",
+        position: 1,
+        shortcuts: [
+            "d h"
+        ]
+    });
+    panel.connectCommand(command);
 });
