@@ -1,19 +1,17 @@
 define([
-    "heroku",
-    "views/panel"
-], function(heroku, PanelHerokuView) {
+    "heroku"
+], function(heroku) {
     var Q = codebox.require("q");
     var hr = codebox.require("hr/hr");
     var _ = codebox.require("underscore");
-    var commands = codebox.require("core/commands");
+    var commands = codebox.require("core/commands/toolbar");
     var settings = codebox.require("core/settings");
     var dialogs = codebox.require("utils/dialogs");
-    var api = codebox.require("core/api");
+    var rpc = codebox.require("core/backends/rpc");
     var search = codebox.require("core/search");
+    var menu = codebox.require("core/commands/menu");
     var user = codebox.require("core/user");
-    var commands = codebox.require("core/commands");
     var panels = codebox.require("core/panels");
-    
 
     // Add settings page
     settings.add({
@@ -34,7 +32,7 @@ define([
                 'content': "Authorize SSH key on Heroku",
                 'help': "Save your settings before authorizing to Heroku.",
                 'trigger': function() {
-                    return api.rpc("/heroku/update");
+                    return rpc.execute("heroku/update");
                 }
             }
         }
@@ -57,17 +55,26 @@ define([
         });
     });
 
-    // Add search panel
-    var panel = panels.register("heroku", PanelHerokuView);
-    
-    // Add opening command
-    var command = commands.register("deploy.heroku.open", {
-        title: "Heroku",
-        icon: "cloud-upload",
-        position: 1,
-        shortcuts: [
-            "d h"
-        ]
-    });
-    panel.connectCommand(command);
+    // Add menu
+    menu.register("heroku", {
+        title: "Heroku"
+    }).menuSection([
+        {
+            'type': "action",
+            'title': "Settings",
+            'action': function() {
+                settings.open("heroku");
+            }
+        }
+    ]).menuSection([
+        {
+            'type': "action",
+            'title': "Refresh Applications",
+            'offline': false,
+            'action': _.partial(heroku.apps, true)
+        },
+        heroku.commands
+    ]);
+
+    heroku.apps();
 });

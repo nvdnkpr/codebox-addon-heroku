@@ -3,8 +3,15 @@ define([], function() {
     var hr = codebox.require("hr/hr");
     var user = codebox.require("core/user");
     var dialogs = codebox.require("utils/dialogs");
-    var api = codebox.require("core/api");
+    var rpc = codebox.require("core/backends/rpc");
+    var Command = codebox.require("models/command");
     var cache = hr.Cache.namespace("heroku");
+
+    var appsCmds = Command.register("heroku.applications", {
+        'title': "Applications",
+        'offline': false,
+        'type': "menu"
+    });
 
     // List apps
     var listApps = function(force) {
@@ -16,8 +23,21 @@ define([], function() {
         if (_apps) {
             return Q(_apps);
         } else {
-            return api.rpc("/heroku/apps").then(function(apps) {
+            return rpc.execute("heroku/apps").then(function(apps) {
+                // Set cache
                 cache.set("apps", apps, 3600);
+
+                // Update list of applications
+                appsCmds.menu.reset(_.map(apps, function(app) {
+                    return {
+                        'title': app.name,
+                        'label': app.buildpack_provided_description,
+                        'action': function() {
+                            deployApp(app);
+                        }
+                    }
+                }));
+
                return apps;
             });
         }
@@ -33,11 +53,11 @@ define([], function() {
     };
 
     // Deploy an application
-    var deployApp = function(gitUrl) {
-        gitUrl = gitUrl || app.git_url;
-        dialogs.confirm("Deploy code to application <b>"+_.escape(gitUrl)+"</b>?").then(function() {
+    var deployApp = function(app) {
+        var gitUrl = app.git_url;
+        dialogs.confirm("Deploy code to application <b>"+_.escape(app.name)+"</b>?").then(function() {
             commands.run("monitor.open");
-            api.rpc("/heroku/deploy", {
+            rpc.execute("heroku/deploy", {
                 'git': app.git_url
             });
         });
@@ -46,6 +66,7 @@ define([], function() {
     return {
         'search': searchApps,
         'deploy': deployApp,
-        'apps': listApps
+        'apps': listApps,
+        'commands': appsCmds
     }
 });

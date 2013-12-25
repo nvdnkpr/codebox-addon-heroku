@@ -1,7 +1,0 @@
-<ul class="cb-panel-list selected-hover">
-    <li class="heroku-refresh-app">Refresh list</li>
-    <li class="header">Heroku Applications</li>
-    <% _.each(apps, function(app) { %>
-        <li data-heroku-app="<%- app.git_url %>"><%- app.name %> </li>
-    <% }); %>
-</ul>
