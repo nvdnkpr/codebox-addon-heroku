@@ -45,7 +45,7 @@ HerokuRPCService.prototype.deploy = function(args, meta) {
 
     // Spawn the new shell
     var shellId = "heroku-deploy";
-    var shell = this.shells.createShellCommand(shellId, 'git', ['push', args.git, 'master']);
+    var shell = this.shells.createShellCommand(shellId, ['git', 'push', args.git, 'master']);
 
     return Q({
         shellId: shellId
