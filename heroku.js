@@ -56,10 +56,11 @@ define([], function() {
     var deployApp = function(app) {
         var gitUrl = app.git_url;
         dialogs.confirm("Deploy code to application <b>"+_.escape(app.name)+"</b>?").then(function() {
-            commands.run("monitor.open");
             rpc.execute("heroku/deploy", {
                 'git': app.git_url
-            });
+            }).then(function(runInfos) {
+                Command.run("terminal.open", runInfos.shellId);
+            })
         });
     };
 

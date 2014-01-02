@@ -6,9 +6,10 @@ var _ = require('underscore');
 var spawn = require('child_process').spawn;
 var Heroku = require('heroku-client');
 
-function HerokuRPCService(workspace, logger) {
+function HerokuRPCService(workspace, logger, shells) {
     this.workspace = workspace;
     this.logger = logger;
+    this.shells = shells;
 
     _.bindAll(this);
 }
@@ -35,32 +36,20 @@ HerokuRPCService.prototype.apps = function(args, meta) {
 
 // Deploy an application
 HerokuRPCService.prototype.deploy = function(args, meta) {
-    var git, d, that = this;
+    var git, that = this;
     if (!args.git) {
         return Q.reject(new Error("Need 'git' to deploy an heroku apps"));
     }
-    d = Q.defer();
 
     this.logger.log("Start deploying to Heroku ("+args.git+")");
 
-    git  = spawn('git', ['push', args.git, 'master'], {
-        'cwd': this.workspace.root
-    });
+    // Spawn the new shell
+    var shellId = "heroku-deploy";
+    var shell = this.shells.createShellCommand(shellId, 'git', ['push', args.git, 'master']);
 
-    git.stdout.setEncoding('utf8');
-    git.stdout.on('data', function(data) {
-        that.logger.log(data);
+    return Q({
+        shellId: shellId
     });
-    git.stderr.setEncoding('utf8');
-    git.stderr.on('data', function(data) {
-        that.logger.log(data);
-    })
-    git.on('exit', function (code, signal) {
-        that.logger.log('Deployment to Heroku is finished with code', code);
-        d.resolve();
-    });
-
-    return d.promise;
 };
 
 // Send key to heroku

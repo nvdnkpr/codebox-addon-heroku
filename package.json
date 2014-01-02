@@ -21,7 +21,8 @@
         "consumes": [
             "logger",
             "httpRPC",
-            "workspace"
+            "workspace",
+            "shells"
         ]
     },
     "client": {
