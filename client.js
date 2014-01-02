@@ -71,7 +71,9 @@ define([
             'type': "action",
             'title': "Refresh Applications",
             'offline': false,
-            'action': _.partial(heroku.apps, true)
+            'action': function() {
+                return heroku.apps(true);
+            }
         },
         heroku.commands
     ]);

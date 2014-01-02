@@ -15,32 +15,35 @@ define([], function() {
 
     // List apps
     var listApps = function(force) {
-        if (!user.settings("heroku").get("key") && force != true) {
-            return Q([]);
-        }
+        return Q().then(function() {
+            if (!user.settings("heroku").get("key")) {
+                return Q([]);
+            }
 
-        var _apps = cache.get("apps");
-        if (_apps) {
-            return Q(_apps);
-        } else {
-            return rpc.execute("heroku/apps").then(function(apps) {
-                // Set cache
-                cache.set("apps", apps, 3600);
+            var _apps = cache.get("apps");
+            if (_apps && force != true) {
+                return Q(_apps);
+            } else {
+                return rpc.execute("heroku/apps").then(function(apps) {
+                    // Set cache
+                    cache.set("apps", apps, 3600);
 
-                // Update list of applications
-                appsCmds.menu.reset(_.map(apps, function(app) {
-                    return {
-                        'title': app.name,
-                        'label': app.buildpack_provided_description,
-                        'action': function() {
-                            deployApp(app);
-                        }
+                   return apps;
+                });
+            }
+        }).then(function(apps) {
+            // Update list of applications
+            appsCmds.menu.reset(_.map(apps, function(app) {
+                return {
+                    'title': app.name,
+                    'label': app.buildpack_provided_description,
+                    'action': function() {
+                        deployApp(app);
                     }
-                }));
-
-               return apps;
-            });
-        }
+                }
+            }));
+            return apps;
+        })
     };
 
     // Search for an app
